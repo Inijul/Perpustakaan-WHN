@@ -1,0 +1,479 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    box-sizing: border-box;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+.logo-child {
+    position: absolute;
+    top: calc(50% - 50px);
+    left: 0px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    background-color: #fbfbfb;
+    width: 100px;
+    height: 100px;
+}
+
+.logo-whn-icon {
+    position: absolute;
+    top: 0px;
+    left: 0.75px;
+    width: 54.5px;
+    height: 41.8px;
+}
+
+.whn-icon {
+    position: absolute;
+    top: 49.25px;
+    left: calc(50% - 27.6px);
+    width: 55.2px;
+    height: 17.2px;
+}
+
+.logo-whn-parent {
+    position: absolute;
+    top: 16.42px;
+    left: 22.39px;
+    width: 55.2px;
+    height: 66.4px;
+}
+
+.logo {
+    width: 100px;
+    position: relative;
+    height: 100px;
+}
+
+.vector-icon {
+    width: 30px;
+    position: relative;
+    max-height: 100%;
+}
+
+.vector-parent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+.kelola-koleksi {
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+}
+
+.vector-group {
+    align-self: stretch;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+.frame-parent {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 40px;
+}
+
+.menu-navbar-child {
+    align-self: stretch;
+    position: relative;
+    border-top: 1px solid rgba(243, 243, 243, 0.6);
+    box-sizing: border-box;
+    height: 1px;
+}
+
+.menu-navbar {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 50px;
+}
+
+.isi-navbar {
+    width: 239px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 80px;
+}
+
+@media (max-width: 1024px){
+    .navbar {
+        top: 0px;
+        left: 0px;
+        background-color: #135ea2;
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+        text-align: center;
+        font-size: 18px;
+        color: #f3f3f3;
+    }
+
+}
+
+.vector-icon4 {
+    width: 13px;
+    position: relative;
+    max-height: 100%;
+}
+
+.tanggal {
+    position: absolute;
+    top: 67px;
+    left: 398px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    text-align: center;
+}
+
+.vector-icon5 {
+    width: 20px;
+    position: relative;
+    max-height: 100%;
+}
+
+.icon-search-child {
+    width: 1px;
+    position: relative;
+    border-right: 1px solid rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+    height: 31px;
+}
+
+.icon-search {
+    width: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.pencarian {
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.search-bar {
+    width: 304px;
+    border-radius: 30px;
+    border: 2px solid #121212;
+    box-sizing: border-box;
+    height: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px 20px;
+}
+
+.frame-child {
+    width: 50px;
+    border-radius: 25px;
+    height: 50px;
+}
+
+.search-bar-parent {
+    position: absolute;
+    top: 52px;
+    left: 1007px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 30px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.selamat-datang-zulfikar {
+    align-self: stretch;
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+}
+
+.admin-wira-husada {
+    align-self: stretch;
+    position: relative;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.selamat-datang-zulfikar-parent {
+    position: absolute;
+    top: 139px;
+    left: 398px;
+    width: 212px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+    font-size: 18px;
+}
+
+.dashboard-child {
+    position: absolute;
+    top: 348px;
+    left: 398px;
+    box-shadow: 0px -4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 30px;
+    background-color: #fff;
+    width: 989px;
+    height: 606px;
+}
+
+.tanggal-parent {
+    position: absolute;
+    top: 479px;
+    left: 438px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 120px;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.aktivitas1 {
+    position: absolute;
+    top: 393px;
+    left: 439px;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+}
+
+.frame-item {
+    width: 40px;
+    position: relative;
+    max-height: 100%;
+}
+
+.buku {
+    align-self: stretch;
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.div {
+    align-self: stretch;
+    position: relative;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+}
+
+.buku-parent {
+    width: 39px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+}
+
+.group-parent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 25px;
+}
+
+.frame-wrapper {
+    width: 230px;
+    box-shadow: 0px -4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    background-color: #fff;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 27px 20px;
+    box-sizing: border-box;
+}
+
+.jurnal-parent {
+    width: 43px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+}
+
+.vector-parent1 {
+    width: 122px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 25px;
+}
+
+.frame-container {
+    width: 230px;
+    box-shadow: 0px -4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    background-color: #fff;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 20px;
+    box-sizing: border-box;
+}
+
+.dokumen-skripsi-parent {
+    width: 127px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.frame-wrapper1 {
+    width: 230px;
+    box-shadow: 0px -4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    background-color: #fff;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 34px 20px;
+    box-sizing: border-box;
+}
+
+.frame-wrapper2 {
+    width: 250px;
+    box-shadow: 0px -4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    background-color: #fff;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 35px 20px;
+    box-sizing: border-box;
+}
+
+.frame-group {
+    position: absolute;
+    top: 210px;
+    left: 398px;
+    width: 989px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.rabu-09-juli1 {
+    position: absolute;
+    top: 553px;
+    left: 439px;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.muhammad-zulfikar {
+    position: absolute;
+    top: 553px;
+    left: 625px;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.jurnal1 {
+    position: absolute;
+    top: 553px;
+    left: 829px;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
+
+.jrnl01 {
+    position: absolute;
+    top: 553px;
+    left: 1022px;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    width: 58px;
+}
+
+.di-pinjam-wrapper {
+    position: absolute;
+    top: 545px;
+    left: 1188px;
+    border-radius: 30px;
+    background-color: rgba(0, 216, 54, 0.7);
+    width: 100px;
+    height: 35px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 17px;
+    box-sizing: border-box;
+}
+
+.dashboard-item {
+    position: absolute;
+    top: 521.5px;
+    left: 437.5px;
+    border-top: 1px solid rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+    width: 910px;
+    height: 1px;
+}
+
+.dashboard {
+    width: 100%;
+    position: relative;
+    background-color: #fff;
+    height: 1024px;
+    overflow: hidden;
+    text-align: left;
+    font-size: 16px;
+    color: #000;
+    font-family: "Plus Jakarta Sans";
+}
