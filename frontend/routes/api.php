@@ -11,6 +11,7 @@ Route::get('/user', function (Request $request) {
 
 // Route untuk API koleksi
 Route::get('/koleksi/{kode}', [KoleksiController::class, 'show']);
+Route::delete('/koleksi/{kode}', [KoleksiController::class, 'destroy']);
 
 // Route untuk API aktivitas
 Route::get('/aktivitas/{id}', [AktivitasController::class, 'show']);

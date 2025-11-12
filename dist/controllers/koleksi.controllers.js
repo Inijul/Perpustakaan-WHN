@@ -67,12 +67,12 @@ exports.getKoleksiByKode = getKoleksiByKode;
 // CREATE koleksi
 const createKoleksi = async (req, res) => {
     console.log("Body data:", req.body); // DEBUG
-    const { kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul } = req.body;
+    const { kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul } = req.body;
     // Jika kategori bukan buku, set topik menjadi "-"
     const topikValue = kategori === 'buku' ? topik : '-';
     try {
-        await database_1.default.query(`INSERT INTO koleksi (kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [kode, kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul]);
+        await database_1.default.query(`INSERT INTO koleksi (kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [kode, kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul]);
         res.status(201).json({ message: "Koleksi ditambahkan" });
     }
     catch (err) {
@@ -87,7 +87,7 @@ const updateKoleksi = async (req, res) => {
     console.log('URL:', req.url);
     console.log('Headers:', req.headers);
     const { kode } = req.params;
-    const { kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul } = req.body;
+    const { kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul } = req.body;
     // Jika kategori bukan buku, set topik menjadi "-"
     const topikValue = kategori === 'buku' ? topik : '-';
     console.log('Kode:', kode);
@@ -95,8 +95,8 @@ const updateKoleksi = async (req, res) => {
     console.log('Topik value:', topikValue);
     try {
         const [result] = await database_1.default.query(`UPDATE koleksi 
-       SET kategori=?, topik=?, judul=?, penulis=?, penerbit=?, tahun_terbit=?, lokasi_rak=?, deskripsi=?, sampul=? 
-       WHERE kode=?`, [kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul, kode]);
+       SET kategori=?, topik=?, judul=?, penulis=?, penerbit=?, tahun_terbit=?, lokasi_rak=?, deskripsi=?, tautan=?, sampul=? 
+       WHERE kode=?`, [kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul, kode]);
         console.log('Update result:', result);
         // Verify the update by fetching the updated record
         const [updatedRows] = await database_1.default.query("SELECT * FROM koleksi WHERE kode = ?", [kode]);

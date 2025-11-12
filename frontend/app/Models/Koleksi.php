@@ -21,6 +21,7 @@ class Koleksi extends Model
         'tahun_terbit',
         'lokasi_rak',
         'deskripsi',
+        'tautan',
         'sampul'
     ];
 

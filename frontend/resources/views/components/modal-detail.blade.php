@@ -1,3 +1,7 @@
+<style>
+    /* glass-effect sekarang global di resources/css/app.css */
+</style>
+
 <div x-data="{ 
         open: false, 
         detail: {}, 
@@ -7,6 +11,20 @@
                 this.open = true;
             });
             window.addEventListener('hide-detail-koleksi', () => this.open = false);
+            
+            // Listen untuk update koleksi dari modal edit
+            window.addEventListener('koleksi-updated', (event) => {
+                const updatedData = event.detail;
+                // Update detail data jika modal detail sedang terbuka dan kode sama
+                if (this.open && this.detail.kode === updatedData.kode) {
+                    // Update hanya field yang ada di updatedData, pertahankan field lain
+                    this.detail = {
+                        ...this.detail,
+                        ...updatedData
+                    };
+                    console.log('Detail koleksi updated automatically:', updatedData);
+                }
+            });
         },
         closeModal() {
             this.open = false;
@@ -34,7 +52,7 @@
          style="min-width: 600px;">
         <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
-            <button @click="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <button @click="closeModal()" class="glass-effect w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-all duration-300">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" class="text-gray-600">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -61,20 +79,20 @@
 
                         <!-- Jika tidak ada gambar sampul -->
                         <template x-if="!detail.sampul">
-                            <div class="w-full h-full bg-yellow-400 flex-col justify-between p-3 relative border-2 border-yellow-500">
+                            <!-- Tampilan untuk Jurnal dan Skripsi -->
+                            <div x-show="detail.kategori === 'jurnal' || detail.kategori === 'skripsi'" 
+                                 class="w-full h-full bg-white flex items-center justify-center p-4 relative border-2 border-gray-300">
+                                <div class="text-center">
+                                    <h3 class="text-black font-bold text-sm leading-tight" x-text="detail.judul || 'Judul'"></h3>
+                                </div>
+                            </div>
+                            
+                            <!-- Tampilan untuk Buku (tampilan lama) -->
+                            <div x-show="detail.kategori !== 'jurnal' && detail.kategori !== 'skripsi'" 
+                                 class="w-full h-full bg-yellow-400 flex-col justify-between p-3 relative border-2 border-yellow-500">
                                 <!-- Book Title -->
                                 <div class="text-center mt-2">
                                     <h3 class="text-black font-bold text-xs leading-tight" x-text="detail.judul || 'Judul Buku'"></h3>
-                                </div>
-                               
-                                <!-- Icons -->
-                                <div class="flex justify-center items-center gap-1 mb-2">
-                                    <div class="w-3 h-3 bg-orange-600 rounded-sm flex items-center justify-center">
-                                        <span class="text-white text-xs font-bold">☕</span>
-                                    </div>
-                                    <div class="w-3 h-3 bg-yellow-600 rounded-sm flex items-center justify-center">
-                                        <span class="text-white text-xs font-bold" x-text="getKategoriDisplay(detail.kategori).charAt(0)"></span>
-                                    </div>
                                 </div>
                                 
                                 <!-- Publisher -->
@@ -102,6 +120,9 @@
                         <p class="text-sm"><span class="font-semibold text-gray-700">Tahun Terbit:</span> <span class="text-gray-900" x-text="detail.tahun_terbit || '-'"></span></p>
                         <p class="text-sm"><span class="font-semibold text-gray-700">Lokasi Rak:</span> <span class="text-gray-900" x-text="detail.lokasi_rak || '-'"></span></p>
                         <p class="text-sm" x-show="detail.topik && detail.topik !== '-'"><span class="font-semibold text-gray-700">Topik:</span> <span class="text-gray-900" x-text="detail.topik || '-'"></span></p>
+                        <p class="text-sm" x-show="detail.tautan && detail.tautan !== ''"><span class="font-semibold text-gray-700">Tautan:</span> 
+                            <a :href="detail.tautan" target="_blank" class="text-blue-600 hover:text-blue-800 underline" x-text="detail.tautan"></a>
+                        </p>
                     </div>
 
                     <!-- Status Buttons -->

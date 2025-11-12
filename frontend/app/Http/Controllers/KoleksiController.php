@@ -56,6 +56,7 @@ class KoleksiController extends Controller
             'tahun_terbit' => $request->input('tahun_terbit'),
             'lokasi_rak' => $request->input('lokasi_rak'),
             'deskripsi' => $request->input('deskripsi'),
+            'tautan' => $request->input('tautan'),
         ];
 
         Log::info('Prepared data for backend', ['data' => $data]);
@@ -153,6 +154,7 @@ class KoleksiController extends Controller
             'tahun_terbit' => $request->input('tahun_terbit'),
             'lokasi_rak' => $request->input('lokasi_rak'),
             'deskripsi' => $request->input('deskripsi'),
+            'tautan' => $request->input('tautan'),
         ];
 
         // Handle upload file sampul jika ada
@@ -214,12 +216,26 @@ class KoleksiController extends Controller
     public function destroy($kode)
     {
         try {
+            Log::info('Delete koleksi request received', ['kode' => $kode]);
+            
             // Hapus data koleksi dari backend API
             $response = Http::timeout(30)->delete("http://backend:5000/api/koleksi/{$kode}");
             
+            Log::info('Backend delete response', [
+                'kode' => $kode,
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            
             if ($response->successful()) {
+                Log::info('Koleksi berhasil dihapus', ['kode' => $kode]);
                 return response()->json(['success' => true, 'message' => 'Koleksi berhasil dihapus']);
             } else {
+                Log::error('Gagal menghapus koleksi di backend', [
+                    'kode' => $kode,
+                    'status' => $response->status(),
+                    'response' => $response->body()
+                ]);
                 return response()->json(['success' => false, 'message' => 'Gagal menghapus koleksi'], 400);
             }
         } catch (\Exception $e) {

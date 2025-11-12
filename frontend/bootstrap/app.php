@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => \App\Http\Middleware\AdminAuth::class,
             'guest.auth' => \App\Http\Middleware\GuestAuth::class,
         ]);
+        
+        // Exclude API routes from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            'api/*'
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

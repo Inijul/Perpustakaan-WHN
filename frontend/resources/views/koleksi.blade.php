@@ -237,13 +237,21 @@
             <!-- Pesan Sukses dan Error -->
             @if(session('success'))
                 <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                    <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.style.display='none'">
-                        <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                            <title>Close</title>
-                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 1 1-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
-                    </button>
+                        <div class="flex-1">
+                            <p class="font-medium">Berhasil!</p>
+                            <p class="text-sm">{{ session('success') }}</p>
+                        </div>
+                        <button type="button" class="ml-3" onclick="this.parentElement.parentElement.style.display='none'">
+                            <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <title>Close</title>
+                                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1 1 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             @endif
 
@@ -403,8 +411,9 @@
                     </div>
                 </div>
 
-                <div x-data="{
+                <div id="koleksi-table" x-data="{
                         checkedRows: [],
+                        isDeleting: false,
                         toggleRow(id) {
                             const index = this.checkedRows.indexOf(id);
                             if (index === -1) this.checkedRows.push(id);
@@ -414,14 +423,22 @@
                         async deleteSelected() {
                             if (this.checkedRows.length === 0) return;
                             
-                            if (!confirm('Apakah Anda yakin ingin menghapus ' + this.checkedRows.length + ' item yang dipilih?')) {
-                                return;
+                            // Set loading state
+                            this.isDeleting = true;
+                            
+                            // Update tombol konfirmasi untuk menunjukkan loading
+                            const confirmBtn = document.getElementById('confirm-delete-btn');
+                            if (confirmBtn) {
+                                confirmBtn.disabled = true;
+                                confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                                confirmBtn.innerHTML = 'Menghapus...';
                             }
                             
                             try {
                                 let successCount = 0;
                                 let errorCount = 0;
                                 let errorMessages = [];
+                                let successMessages = [];
                                 
                                 for (let kode of this.checkedRows) {
                                     console.log('Attempting to delete kode:', kode);
@@ -441,6 +458,11 @@
                                         console.log('Success deleting ' + kode + ':', result);
                                         successCount++;
                                         
+                                        // Simpan pesan dari controller
+                                        if (result.message) {
+                                            successMessages.push(result.message);
+                                        }
+                                        
                                         // Dispatch event untuk remove row dari tabel
                                         window.dispatchEvent(new CustomEvent('remove-table-row', {
                                             detail: { kode: kode }
@@ -455,21 +477,63 @@
                                 
                                 // Tampilkan pesan hasil
                                 if (successCount > 0) {
-                                    alert('Berhasil menghapus ' + successCount + ' item' + (successCount > 1 ? 's' : ''));
-                                    if (errorCount > 0) {
-                                        alert('Gagal menghapus ' + errorCount + ' item' + (errorCount > 1 ? 's' : '') + ':\n' + errorMessages.join('\n'));
+                                    if (typeof showSuccessMessage === 'function') {
+                                        // Gunakan pesan dari controller jika ada, fallback ke pesan default
+                                        const message = successMessages.length > 0 ? 
+                                            successMessages[0] : // Ambil pesan pertama dari controller
+                                            'Berhasil menghapus ' + successCount + ' koleksi';
+                                        showSuccessMessage(message);
+                                    }
+                                    if (errorCount > 0 && typeof showErrorMessage === 'function') {
+                                        showErrorMessage('Gagal menghapus ' + errorCount + ' item' + (errorCount > 1 ? '' : '') + ':\n' + errorMessages.join('\n'));
                                     }
                                     // Clear checked rows setelah berhasil delete
                                     this.checkedRows = [];
+                                    
+                                    // Tutup modal konfirmasi setelah berhasil hapus
+                                    if (typeof hideDeleteConfirmationModal === 'function') {
+                                        hideDeleteConfirmationModal();
+                                    }
                                 } else {
-                                    alert('Gagal menghapus semua item yang dipilih:\n' + errorMessages.join('\n'));
+                                    if (typeof showErrorMessage === 'function') {
+                                        showErrorMessage('Gagal menghapus semua item yang dipilih:\n' + errorMessages.join('\n'));
+                                    }
+                                    // Tutup modal konfirmasi meskipun gagal
+                                    if (typeof hideDeleteConfirmationModal === 'function') {
+                                        hideDeleteConfirmationModal();
+                                    }
                                 }
                             } catch (error) {
                                 console.error('Error:', error);
-                                alert('Terjadi kesalahan saat menghapus item: ' + error.message);
+                                if (typeof showErrorMessage === 'function') {
+                                    showErrorMessage('Terjadi kesalahan saat menghapus item: ' + error.message);
+                                }
+                                // Tutup modal konfirmasi meskipun terjadi error
+                                if (typeof hideDeleteConfirmationModal === 'function') {
+                                    hideDeleteConfirmationModal();
+                                }
+                            } finally {
+                                // Reset loading state
+                                this.isDeleting = false;
+                                
+                                // Reset tombol konfirmasi
+                                const confirmBtn = document.getElementById('confirm-delete-btn');
+                                if (confirmBtn) {
+                                    confirmBtn.disabled = false;
+                                    confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                                    confirmBtn.innerHTML = 'Ya, Hapus';
+                                }
                             }
                         }
-                    }">
+                    }" x-init="
+                        window.addEventListener('clear-checked-rows', () => {
+                            this.clearAll();
+                            this.$nextTick(() => {
+                                const checkboxes = $el.querySelectorAll('input[type=checkbox]');
+                                checkboxes.forEach(cb => { cb.checked = false; });
+                            });
+                        });
+                    ">
 
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -504,9 +568,11 @@
                                                 x-transition:leave="transition ease-in duration-150"
                                                 x-transition:leave-start="opacity-100 scale-100"
                                                 x-transition:leave-end="opacity-0 scale-95"
-                                                @click="deleteSelected()"
+                                                @click="window.showDeleteConfirmationModal([...checkedRows])"
+                                                :disabled="isDeleting"
+                                                :class="isDeleting ? 'opacity-50 cursor-not-allowed' : ''"
                                                 class="w-8 h-8 flex items-center justify-center rounded-full border-[3px] border-black hover:border-red-500 transition-all duration-200 group shadow-sm hover:shadow-md delete-btn"
-                                                title="Hapus item yang dipilih">
+                                                :title="isDeleting ? 'Sedang menghapus...' : 'Hapus item yang dipilih'">
                                                 <svg class="w-7 h-7 transition-all duration-200 group-hover:stroke-red-500" 
                                                      fill="none" 
                                                      viewBox="0 0 24 24"
@@ -818,6 +884,95 @@ function filterData() {
     }
 }
 
+// Modal Konfirmasi Hapus (mengikuti pola sidebar/logout & return-confirmation)
+function initDeleteConfirmationModal() {
+    // Buat struktur modal sekali jika belum ada
+    if (document.getElementById('delete-confirmation-modal')) return;
+    const modalHtml = `
+    <div id="delete-confirmation-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display:none;">
+        <div id="delete-confirmation-modal-content" class="bg-white rounded-[30px] w-full max-w-sm mx-auto relative border border-gray-200 shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0">
+            <div class="flex items-center justify-center p-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="px-6 pb-2 text-center">
+                <h3 class="text-xl font-bold text-gray-900">Konfirmasi Hapus</h3>
+                <p id="delete-summary" class="text-gray-600 mt-2">Apakah Anda yakin ingin menghapus item terpilih?</p>
+            </div>
+            <div class="flex justify-between gap-4 px-6 pb-6">
+                <button type="button" onclick="hideDeleteConfirmationModal()" class="glass-effect flex-1 border border-black rounded-[30px] py-2 font-medium hover:bg-gray-100 transition-all duration-300">Batalkan</button>
+                <button type="button" id="confirm-delete-btn" class="glass-effect flex-1 bg-red-600 text-white rounded-[30px] py-2 font-medium hover:bg-red-700 transition-all duration-300">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Event backdrop click
+    const modal = document.getElementById('delete-confirmation-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) hideDeleteConfirmationModal();
+        });
+    }
+
+    // Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const m = document.getElementById('delete-confirmation-modal');
+            if (m && m.style.display === 'flex') hideDeleteConfirmationModal();
+        }
+    });
+}
+
+window.showDeleteConfirmationModal = function(kodeList) {
+    initDeleteConfirmationModal();
+    window.__pendingDeleteKodeList = Array.isArray(kodeList) ? kodeList : [];
+    const count = window.__pendingDeleteKodeList.length;
+    const summary = document.getElementById('delete-summary');
+    if (summary) {
+        summary.textContent = count > 1 ? `Apakah Anda yakin ingin menghapus ${count} koleksi terpilih?` : 'Apakah Anda yakin ingin menghapus 1 koleksi terpilih?';
+    }
+    const modal = document.getElementById('delete-confirmation-modal');
+    const content = document.getElementById('delete-confirmation-modal-content');
+    if (!modal || !content) return;
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+
+    // Pasang handler konfirmasi yang memanggil Alpine.js method
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn && !confirmBtn.__bound) {
+        confirmBtn.__bound = true;
+        confirmBtn.addEventListener('click', () => {
+            // Panggil method Alpine.js dari komponen tabel
+            const tableComponent = document.querySelector('[x-data*="checkedRows"]');
+            if (tableComponent && tableComponent._x_dataStack) {
+                const alpineData = tableComponent._x_dataStack[0];
+                if (alpineData && typeof alpineData.deleteSelected === 'function') {
+                    alpineData.deleteSelected();
+                }
+            }
+        });
+    }
+};
+
+window.hideDeleteConfirmationModal = function() {
+    const modal = document.getElementById('delete-confirmation-modal');
+    const content = document.getElementById('delete-confirmation-modal-content');
+    if (!modal || !content) return;
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => { modal.style.display = 'none'; }, 300);
+};
+
+// Function ini sudah tidak digunakan karena logic sudah dipindah ke Alpine.js x-data
+// Semua logic hapus sekarang menggunakan Alpine.js di x-data untuk konsistensi
+
 // Page loading optimization
 document.addEventListener('DOMContentLoaded', function() {
     // Hide loading overlay and show content
@@ -825,11 +980,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainContent = document.getElementById('main-content');
     
     setTimeout(() => {
-        if (loadingOverlay) loadingOverlay.style.display = 'none';
+        // Jika sebelumnya kita minta skip overlay untuk reload halus, sembunyikan overlay segera
+        let skip = false;
+        try { skip = sessionStorage.getItem('skipOverlayOnce') === '1'; } catch (_) {}
+        if (skip) {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            try { sessionStorage.removeItem('skipOverlayOnce'); } catch (_) {}
+        } else {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
         if (mainContent) {
             mainContent.style.display = 'flex';
         }
-    }, 500);
+    }, 200);
     
     // Auto-hide flash messages after 5 seconds
     const successMessage = document.getElementById('success-message');
@@ -931,6 +1094,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 });
+
+// Fungsi notifikasi global yang sama dengan aktivitas
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4';
+    alertDiv.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="flex-1">
+                <p class="font-medium">Berhasil!</p>
+                <p class="text-sm">${message}</p>
+            </div>
+        </div>
+    `;
+    
+    // Masukkan alert di awal container
+    const container = document.querySelector('.flex-1.p-4.md\\:p-8');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto hide setelah 3 detik
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+}
+
+function showErrorMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4';
+    alertDiv.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="flex-1">
+                <p class="font-medium">Terjadi kesalahan!</p>
+                <p class="text-sm">${message}</p>
+            </div>
+        </div>
+    `;
+    
+    // Masukkan alert di awal container
+    const container = document.querySelector('.flex-1.p-4.md\\:p-8');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto hide setelah 5 detik
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+}
 </script>
 
 </html>

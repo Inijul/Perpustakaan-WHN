@@ -16,7 +16,7 @@ Route::middleware(['web', 'guest.auth'])->group(function () {
 // Routes yang memerlukan authentication
 Route::middleware(['web', 'admin.auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/aktivitas', [AktivitasController::class, 'index'])->name('aktivitas.index');
@@ -34,6 +34,7 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
 
 // API Routes untuk koleksi
 Route::get('/api/koleksi/{kode}', [KoleksiController::class, 'show']);
+Route::delete('/api/koleksi/{kode}', [KoleksiController::class, 'destroy']);
 
 // API Routes untuk mahasiswa
 Route::get('/api/mahasiswa', function () {

@@ -109,6 +109,24 @@ class AktivitasController extends Controller
                     });
                 }
                 
+                // Sorting: Status "dipinjam" dulu, lalu nama mahasiswa A-Z
+                usort($aktivitas, function($a, $b) {
+                    // Urutkan berdasarkan status: "dipinjam" dulu
+                    $statusA = $a['status_aktivitas'] ?? 'dipinjam';
+                    $statusB = $b['status_aktivitas'] ?? 'dipinjam';
+                    
+                    if ($statusA === 'dipinjam' && $statusB !== 'dipinjam') {
+                        return -1; // A lebih dulu
+                    } elseif ($statusA !== 'dipinjam' && $statusB === 'dipinjam') {
+                        return 1; // B lebih dulu
+                    } else {
+                        // Jika status sama, urutkan berdasarkan nama mahasiswa A-Z
+                        $namaA = $a['nama_mahasiswa'] ?? '';
+                        $namaB = $b['nama_mahasiswa'] ?? '';
+                        return strcasecmp($namaA, $namaB);
+                    }
+                });
+                
                 Log::info('Fetched aktivitas data:', ['count' => count($aktivitas), 'timestamp' => now()]);
             } else {
                 $aktivitas = [];

@@ -460,11 +460,11 @@
             {{-- Alert Messages --}}
             @if(session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <div class="flex">
-                        <svg class="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
-                        <div>
+                        <div class="flex-1">
                             <p class="font-medium">Berhasil!</p>
                             <p class="text-sm">{{ session('success') }}</p>
                         </div>
@@ -474,11 +474,11 @@
 
             @if($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <div class="flex">
-                        <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                         </svg>
-                        <div>
+                        <div class="flex-1">
                             <p class="font-medium">Terjadi kesalahan!</p>
                             <ul class="list-disc list-inside text-sm">
                                 @foreach($errors->all() as $error)
@@ -633,6 +633,7 @@
                             @endphp
                             <tr data-topik="{{ $item['topik'] ?? '' }}"
                                 data-kode="{{ $item['kode'] ?? '' }}"
+                                data-aktivitas-id="{{ $item['id_aktivitas'] }}"
                                 data-status="{{ $item['status_aktivitas'] ?? 'dipinjam' }}"
                                 data-nama="{{ $item['nama_mahasiswa'] ?? '' }}"
                                 class="filterable-row">
@@ -704,28 +705,10 @@
                                                  :class="{ 'show': open }">
                                                 
                                                 <div @click="
-                                                    loading = true;
-                                                    // Update status menjadi dikembalikan
-                                                    updateStatus('{{ $item['id_aktivitas'] }}', 'dikembalikan').then(() => {
-                                                        selected = 'dikembalikan';
-                                                        open = false;
-                                                        loading = false;
-                                                        
-                                                        // Kirim event untuk update status koleksi
-                                                        window.dispatchEvent(new CustomEvent('koleksi-status-updated', {
-                                                            detail: {
-                                                                kode: '{{ $item['kode'] }}',
-                                                                newStatus: 'Tersedia'
-                                                            }
-                                                        }));
-                                                        
-                                                        // Refresh halaman setelah 1 detik untuk update dropdown buku
-                                                        setTimeout(() => {
-                                                            window.location.reload();
-                                                        }, 1000);
-                                                    }).catch(() => {
-                                                        loading = false;
-                                                    });
+                                                    // Tutup dropdown terlebih dahulu
+                                                    open = false;
+                                                    // Panggil updateStatus yang akan menampilkan modal konfirmasi
+                                                    updateStatus('{{ $item['id_aktivitas'] }}', 'dikembalikan');
                                                 "
                                                      class="dropdown-option dikembalikan">
                                                     Dikembalikan
@@ -747,7 +730,7 @@
                                         <p class="text-sm text-gray-400">Mulai dengan menambahkan aktivitas peminjaman baru</p>
                                         <button id="add-aktivitas-btn-2"
                                             onclick="openModal()"
-                                            class="mt-4 px-6 py-3 bg-[#024088] text-white rounded-[30px] hover:bg-[#1a5ba8] font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+                                            class="glass-effect mt-4 px-6 py-3 bg-[#024088] text-white rounded-[30px] hover:bg-[#1a5ba8] font-medium shadow-sm hover:shadow-md flex items-center gap-2">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                             </svg>
@@ -783,78 +766,169 @@
     </script>
     @endif
 
+    {{-- Return Confirmation Modal --}}
+    <div id="return-confirmation-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;">
+        <div class="bg-white rounded-[30px] w-full max-w-sm mx-auto relative border border-gray-200 shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0" id="return-confirmation-modal-content">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-center p-6">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="px-6 pb-4 text-center">
+                <h3 class="text-xl font-bold text-gray-900">Konfirmasi Pengembalian</h3>
+                <p class="text-gray-600 mt-2">Apakah Anda yakin ingin mengembalikan buku ini?</p>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-between gap-4 px-6 pb-6">
+                <button type="button" onclick="hideReturnConfirmationModal()" 
+                        class="glass-effect flex-1 border border-black rounded-[30px] py-2 font-medium hover:bg-gray-100 transition-all duration-300">
+                    Batalkan
+                </button>
+                <button type="button" id="confirm-return-btn"
+                        class="glass-effect flex-1 bg-blue-600 text-white rounded-[30px] py-2 font-medium hover:bg-blue-700 transition-all duration-300">
+                    Ya, Kembalikan
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Fungsi untuk menampilkan modal konfirmasi pengembalian
+        function showReturnConfirmationModal() {
+            const modal = document.getElementById('return-confirmation-modal');
+            const modalContent = document.getElementById('return-confirmation-modal-content');
+            
+            modal.style.display = 'flex';
+            
+            // Trigger animation
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // Fungsi untuk menyembunyikan modal konfirmasi pengembalian
+        function hideReturnConfirmationModal() {
+            const modal = document.getElementById('return-confirmation-modal');
+            const modalContent = document.getElementById('return-confirmation-modal-content');
+            
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
         // Fungsi untuk mengupdate status aktivitas
         async function updateStatus(id, status) {
-            if (confirm('Apakah Anda yakin ingin mengubah status menjadi ' + status + '?')) {
-                try {
-                    const requestBody = { status: status };
+            // Cari kode buku dari tabel untuk disimpan
+            const row = document.querySelector(`tr[data-aktivitas-id="${id}"]`);
+            const kode = row ? row.getAttribute('data-kode') : '';
+            
+            // Simpan data untuk konfirmasi
+            window.pendingStatusUpdate = { id: id, status: status, kode: kode };
+            
+            // Tampilkan modal konfirmasi
+            showReturnConfirmationModal();
+        }
+
+        // Fungsi untuk memproses konfirmasi pengembalian
+        async function processStatusUpdate() {
+            if (!window.pendingStatusUpdate) return;
+            
+            const { id, status } = window.pendingStatusUpdate;
+            
+            // Tampilkan loading state pada tombol konfirmasi
+            const confirmBtn = document.getElementById('confirm-return-btn');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Memproses...';
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Refresh halaman langsung saat tombol diklik
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+            
+            try {
+                const requestBody = { status: status };
+                
+                const csrfToken = document.querySelector('meta[name=csrf-token]').getAttribute('content');
                     
-                    const csrfToken = document.querySelector('meta[name=csrf-token]').getAttribute('content');
+                const requestOptions = {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                };
                     
-                    const requestOptions = {
-                        method: 'PATCH',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                    };
+                const response = await fetch('/aktivitas/' + id + '/status', requestOptions);
+                
+                if (response.ok) {
+                    const responseData = await response.json();
                     
-                    const response = await fetch('/aktivitas/' + id + '/status', requestOptions);
-                    
-                    if (response.ok) {
-                        const responseData = await response.json();
-                        
-                        // Tambahkan animasi perubahan status
-                        const statusButton = document.querySelector(`[data-aktivitas-id="${id}"]`);
-                        if (statusButton) {
-                            statusButton.classList.add('status-change-animation');
-                            setTimeout(() => {
-                                statusButton.classList.remove('status-change-animation');
-                            }, 600);
+                    // Kirim event untuk update status koleksi
+                    window.dispatchEvent(new CustomEvent('koleksi-status-updated', {
+                        detail: {
+                            kode: window.pendingStatusUpdate.kode || '',
+                            newStatus: 'Tersedia'
                         }
-                        
-                        // Tampilkan pesan sukses
-                        showSuccessMessage('Status berhasil diubah menjadi ' + status);
-                        
-                        return true;
-                    } else {
-                        let errorMessage = 'Gagal mengupdate status';
-                        try {
-                            const errorData = await response.json();
-                            errorMessage = errorData.message || errorData.error || errorMessage;
-                        } catch (e) {
-                            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                        }
-                        
-                        throw new Error(errorMessage);
-                    }
-                } catch (error) {
-                    let errorMessage = 'Terjadi kesalahan saat mengupdate status';
-                    if (error.message) {
-                        errorMessage = error.message;
+                    }));
+                    
+                    // Clear pending update
+                    window.pendingStatusUpdate = null;
+                    
+                    return true;
+                } else {
+                    let errorMessage = 'Gagal mengupdate status';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                     }
                     
-                    showErrorMessage(errorMessage);
-                    throw error;
+                    throw new Error(errorMessage);
                 }
-            } else {
-                throw new Error('Dibatalkan oleh user');
+            } catch (error) {
+                let errorMessage = 'Terjadi kesalahan saat mengupdate status';
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                // Tampilkan error message sebelum refresh
+                showErrorMessage(errorMessage);
+                
+                // Refresh halaman untuk menampilkan error
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+                throw error;
             }
         }
+
 
         // Fungsi untuk menampilkan pesan sukses
         function showSuccessMessage(message) {
             const alertDiv = document.createElement('div');
             alertDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4';
             alertDiv.innerHTML = `
-                <div class="flex">
-                    <svg class="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                    <div>
+                    <div class="flex-1">
                         <p class="font-medium">Berhasil!</p>
                         <p class="text-sm">${message}</p>
                     </div>
@@ -876,11 +950,11 @@
             const alertDiv = document.createElement('div');
             alertDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4';
             alertDiv.innerHTML = `
-                <div class="flex">
-                    <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                     </svg>
-                    <div>
+                    <div class="flex-1">
                         <p class="font-medium">Terjadi kesalahan!</p>
                         <p class="text-sm">${message}</p>
                     </div>
@@ -1301,6 +1375,37 @@
                 setTimeout(() => {
                     window.location.href = '/koleksi';
                 }, 1000);
+            });
+        });
+
+        // Event listeners untuk modal konfirmasi pengembalian
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listener untuk tombol konfirmasi
+            const confirmBtn = document.getElementById('confirm-return-btn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    processStatusUpdate();
+                });
+            }
+
+            // Event listener untuk menutup modal saat klik di luar
+            const returnModal = document.getElementById('return-confirmation-modal');
+            if (returnModal) {
+                returnModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideReturnConfirmationModal();
+                    }
+                });
+            }
+
+            // Event listener untuk escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const returnModal = document.getElementById('return-confirmation-modal');
+                    if (returnModal && returnModal.style.display === 'flex') {
+                        hideReturnConfirmationModal();
+                    }
+                }
             });
         });
         

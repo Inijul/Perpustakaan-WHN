@@ -63,16 +63,16 @@ export const getKoleksiByKode = async (req: Request, res: Response) => {
 // CREATE koleksi
 export const createKoleksi = async (req: Request, res: Response) => {
     console.log("Body data:", req.body); // DEBUG
-  const { kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul } = req.body;
+  const { kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul } = req.body;
   
   // Jika kategori bukan buku, set topik menjadi "-"
   const topikValue = kategori === 'buku' ? topik : '-';
   
   try {
     await db.query(
-      `INSERT INTO koleksi (kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [kode, kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul]
+      `INSERT INTO koleksi (kode, kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [kode, kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul]
     );
     res.status(201).json({ message: "Koleksi ditambahkan" });
   } catch (err) {
@@ -88,7 +88,7 @@ export const updateKoleksi = async (req: Request, res: Response) => {
   console.log('Headers:', req.headers);
   
   const { kode } = req.params;
-  const { kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul } = req.body;
+  const { kategori, topik, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul } = req.body;
   
   // Jika kategori bukan buku, set topik menjadi "-"
   const topikValue = kategori === 'buku' ? topik : '-';
@@ -100,9 +100,9 @@ export const updateKoleksi = async (req: Request, res: Response) => {
   try {
     const [result] = await db.query(
       `UPDATE koleksi 
-       SET kategori=?, topik=?, judul=?, penulis=?, penerbit=?, tahun_terbit=?, lokasi_rak=?, deskripsi=?, sampul=? 
+       SET kategori=?, topik=?, judul=?, penulis=?, penerbit=?, tahun_terbit=?, lokasi_rak=?, deskripsi=?, tautan=?, sampul=? 
        WHERE kode=?`,
-      [kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, sampul, kode]
+      [kategori, topikValue, judul, penulis, penerbit, tahun_terbit, lokasi_rak, deskripsi, tautan, sampul, kode]
     );
     
     console.log('Update result:', result);
@@ -138,6 +138,24 @@ export const deleteKoleksi = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Koleksi tidak ditemukan", kode: kode });
     }
     
+    // Check if there are any aktivitas that reference this koleksi with status 'dipinjam'
+    const [aktivitasRows] = await db.query("SELECT * FROM aktivitas WHERE kode = ? AND status = 'dipinjam'", [kode]);
+    console.log('Active aktivitas records found:', (aktivitasRows as any[]).length);
+    
+    if ((aktivitasRows as any[]).length > 0) {
+      console.log('Cannot delete koleksi because it has active aktivitas (dipinjam)');
+      return res.status(400).json({ 
+        message: "Tidak dapat menghapus koleksi karena masih ada aktivitas yang aktif (dipinjam). Silakan kembalikan buku terlebih dahulu.", 
+        kode: kode,
+        hasAktivitas: true,
+        aktivitasCount: (aktivitasRows as any[]).length
+      });
+    }
+    
+    // Delete all aktivitas records for this koleksi (both dipinjam and dikembalikan)
+    const [deleteAktivitasResult] = await db.query("DELETE FROM aktivitas WHERE kode = ?", [kode]);
+    console.log('Deleted aktivitas records:', deleteAktivitasResult);
+    
     // Perform the delete
     const [result] = await db.query("DELETE FROM koleksi WHERE kode = ?", [kode]);
     console.log('Delete result:', result);
@@ -153,8 +171,18 @@ export const deleteKoleksi = async (req: Request, res: Response) => {
       console.log('Failed to delete koleksi with kode:', kode);
       res.status(500).json({ message: "Gagal menghapus koleksi", kode: kode });
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error deleting koleksi:', err);
-    res.status(500).json({ message: "Error hapus koleksi", error: err, kode: kode });
+    
+    // Handle foreign key constraint error specifically
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ 
+        message: "Tidak dapat menghapus koleksi karena masih ada aktivitas yang terkait. Silakan hapus aktivitas terlebih dahulu.", 
+        kode: kode,
+        hasAktivitas: true
+      });
+    }
+    
+    res.status(500).json({ message: "Error hapus koleksi", error: err.message, kode: kode });
   }
 };
