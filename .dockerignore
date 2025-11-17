@@ -1,0 +1,14 @@
+vendor
+node_modules
+.git
+.gitignore
+backup_*.zip
+backup_before_move_*.zip
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/logs
+public/storage
+**/.DS_Store
+**/Thumbs.db
+
